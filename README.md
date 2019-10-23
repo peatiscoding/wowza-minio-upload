@@ -1,5 +1,14 @@
-# S3Upload
-The **ModuleS3Upload** module for [Wowza Streaming Engine™ media server software](https://www.wowza.com/products/streaming-engine) automatically uploads finished recordings to an Amazon S3 bucket. It uses the Amazon Web Services (AWS) SDK for Java to upload the recorded files.
+# Minio (s3) Upload
+
+## General Information
+
+This project is the forked version from original Wowza's plugin [wse-plugin-s3upload](https://github.com/WowzaMediaSystems/wse-plugin-s3upload). The aim is to use this plugin to uplaod to Minio Server (s3 compatible) instead of AWS's S3 Servers.
+
+The current implementation of original plugin is not working with the custom endpoint such as Minio's URL, eg. http://localhost:9000, the endpoint is actually built from the bucket's regions. So I forked the source code and create my own.
+
+The main changes to original source code is just how we fixed the endpoint problem. As Minio implementation example. [Link](https://docs.min.io/docs/how-to-use-aws-sdk-for-java-with-minio-server.html). And I've also made some adjustment to the required parameters;
+
+The **ModuleMinioUpload** module for [Wowza Streaming Engine™ media server software](https://www.wowza.com/products/streaming-engine) automatically uploads finished recordings to an Minio bucket (Compatible to AWS S3). It uses the Amazon Web Services (AWS) SDK for Java to upload the recorded files.
 
 ## Prerequisites
 Wowza Streaming Engine 4.7.2.02 or later is recommended. For earlier versions see note below regarding AWS SDK version.
@@ -21,19 +30,8 @@ When a recording is finished, a temporary file named **[recording-name].upload**
 
 When the Wowza Streaming Engine application starts or restarts, the module checks to see if any interrupted uploads must be completed. Interrupted single part uploads are restarted from the beginning while interrupted multipart uploads are resumed from the last complete part. If the module is set to not resume uploads after interruptions (**s3UploadResumeUploads** = **false**), incomplete multipart uploads are deleted from the S3 bucket.
 
-## More resources
-[Wowza Streaming Engine Server-Side API Reference](https://www.wowza.com/resources/WowzaStreamingEngine_ServerSideAPI.pdf)
+## Useful Links
 
-[How to extend Wowza Streaming Engine using the Wowza IDE](https://www.wowza.com/forums/content.php?759-How-to-extend-Wowza-Streaming-Engine-using-the-Wowza-IDE)
-
-Wowza Media Systems™ provides developers with a platform to create streaming applications and solutions. See [Wowza Developer Tools](https://www.wowza.com/resources/developers) to learn more about our APIs and SDK.
-
-To use the compiled version of this module, see [How to upload recorded media to an Amazon S3 bucket (S3Upload)](https://www.wowza.com/forums/content.php?813-How-to-upload-recorded-media-to-an-Amazon-S3-bucket-%28ModuleS3Upload%29).
-
-## Contact
-[Wowza Media Systems, LLC](https://www.wowza.com/contact)
-
-## License
-This code is distributed under the [Wowza Public License](https://github.com/WowzaMediaSystems/wse-plugin-s3upload/blob/master/LICENSE.txt).
-
-![alt tag](http://wowzalogs.com/stats/githubimage.php?plugin=wse-plugin-s3upload)
+* [Minio Implementation using AWS SDK (Java)](https://docs.min.io/docs/how-to-use-aws-sdk-for-java-with-minio-server.html)
+* [Wowza Publishing URL Tool (WebRTC)](https://www.wowza.com/_private/webrtc/4.7.7/publish/)
+* [Original Project](https://www.wowza.com/docs/how-to-upload-recorded-media-to-an-amazon-s3-bucket-modules3upload)
