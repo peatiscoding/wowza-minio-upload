@@ -8,6 +8,12 @@ The current implementation of original plugin is not working with the custom end
 
 The main changes to original source code is just how we fixed the endpoint problem. As Minio implementation example. [Link](https://docs.min.io/docs/how-to-use-aws-sdk-for-java-with-minio-server.html). And I've also made some adjustment to the required parameters;
 
+## Parameters
+
+Parameter Name|Required?|Type
+--|--|--
+`minioUploadAccessKey`|Yes|Access Key of minio
+
 The **ModuleMinioUpload** module for [Wowza Streaming Engine™ media server software](https://www.wowza.com/products/streaming-engine) automatically uploads finished recordings to an Minio bucket (Compatible to AWS S3). It uses the Amazon Web Services (AWS) SDK for Java to upload the recorded files.
 
 ## Prerequisites
