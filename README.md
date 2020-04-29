@@ -18,6 +18,7 @@ Parameter Name|Required?|Type
 `minioUploadBucketName`|Yes|Target bucket name
 `minioUploadFilePrefix`|No|File's prefix - replacing `s3UploadFilePrefix`
 `minioUploadDebugLog`|No|Write debug events? default = `false`
+`minioUploadFilterSuffix`|No|Upload only matched file. default = null (disabled)
 
 Other parameters are still prefixed as S3. Please see and there for you can use whatever you have configured for S3 plugin as for this one.
 

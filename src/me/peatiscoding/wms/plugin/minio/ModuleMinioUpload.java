@@ -331,6 +331,7 @@ public class ModuleMinioUpload extends ModuleBase {
 	private String filePrefix = null;
 	private String endpoint = null;
 	private String regionName = null;
+	private String filterFilterSuffix = null;
 	private File storageDir = null;
 	private Map<String, Timer> uploadTimers = new HashMap<String, Timer>();
 	private List<String> currentUploads = new ArrayList<String>();
@@ -369,6 +370,7 @@ public class ModuleMinioUpload extends ModuleBase {
 			filePrefix = props.getPropertyStr("minioUploadFilePrefix", filePrefix);
 			endpoint = props.getPropertyStr("minioUploadEndpoint", endpoint);
 			debugLog = props.getPropertyBoolean("minioUploadDebugLog", debugLog);
+			filterFilterSuffix = props.getPropertyStr("minioUploadFilterSuffix", filterFilterSuffix);
 
 			//  turn on global bucket access so that uploads won't fail if the region is incorrect.
 			checkBucket = props.getPropertyBoolean("s3UploadCheckBucket", checkBucket);
@@ -435,7 +437,7 @@ public class ModuleMinioUpload extends ModuleBase {
 				// fails with a 301 response if the bucket is in a different region and allowBucketRegionOverride isn't set (otherwise log a warning).
 				HeadBucketResult headBucketResult = s3Client.headBucket(new HeadBucketRequest(bucketName));
 				String bucketRegion = headBucketResult.getBucketRegion();
-				if (!bucketRegion.equalsIgnoreCase(regionName))
+				if (bucketRegion == null || !bucketRegion.equalsIgnoreCase(regionName))
 					logger.warn(MODULE_NAME + ".onAppStart: [" + appInstance.getContextStr() + "] bucket region doesn't match configured region. (b:c)[" + bucketRegion + ":" + regionName + "]", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
 			}
 			transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
@@ -534,6 +536,14 @@ public class ModuleMinioUpload extends ModuleBase {
 
 	private void startUpload(String mediaName, long delay)
 	{
+		// If filter is set.
+		if (!("".contentEquals(filterFilterSuffix) || filterFilterSuffix == null)) {
+			// If filter did not matched. Skip it.
+			if (!mediaName.endsWith(filterFilterSuffix)) {
+				logger.info(MODULE_NAME + ".startUpload (skipped) for [" + appInstance.getContextStr() + "/" + mediaName + "] due to filter suffix mismatched.", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
+				return;
+			}
+		}
 		synchronized(lock)
 		{
 			Timer t = uploadTimers.remove(mediaName);
