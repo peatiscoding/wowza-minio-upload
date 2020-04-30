@@ -173,6 +173,15 @@ public class ModuleMinioUpload extends ModuleBase {
 				logger.warn(MODULE_NAME + ".WriteListener.onWriteComplete Cannot upload file because S3 Transfer Manager isn't loaded: [" + appInstance.getContextStr() + "/" + mediaName + "]");
 			}
 
+			// If filter is set.
+			if (!("".equals(filterFilterSuffix) || filterFilterSuffix == null)) {
+				// If filter did not matched. Skip it.
+				if (!mediaName.endsWith(filterFilterSuffix)) {
+					logger.info(MODULE_NAME + ".onWriteComplete (skipped) for [" + appInstance.getContextStr() + "/" + mediaName + "] due to filter suffix mismatched.", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
+					return;
+				}
+			}
+			
 			File uploadFile = null;
 			synchronized(lock)
 			{
@@ -331,7 +340,7 @@ public class ModuleMinioUpload extends ModuleBase {
 	private String filePrefix = null;
 	private String endpoint = null;
 	private String regionName = null;
-	private String filterFilterSuffix = null;
+	private String filterFilterSuffix = "";
 	private File storageDir = null;
 	private Map<String, Timer> uploadTimers = new HashMap<String, Timer>();
 	private List<String> currentUploads = new ArrayList<String>();
@@ -438,7 +447,7 @@ public class ModuleMinioUpload extends ModuleBase {
 				HeadBucketResult headBucketResult = s3Client.headBucket(new HeadBucketRequest(bucketName));
 				String bucketRegion = headBucketResult.getBucketRegion();
 				if (bucketRegion == null || !bucketRegion.equalsIgnoreCase(regionName))
-					logger.warn(MODULE_NAME + ".onAppStart: [" + appInstance.getContextStr() + "] bucket region doesn't match configured region. (b:c)[" + bucketRegion + ":" + regionName + "]", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
+					logger.debug(MODULE_NAME + ".onAppStart: [" + appInstance.getContextStr() + "] bucket region doesn't match configured region. (b:c)[" + bucketRegion + ":" + regionName + "]", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
 			}
 			transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
 			logger.info(MODULE_NAME + ".onAppStart [" + appInstance.getContextStr() + "] Local Storage Dir: " + storageDirStr + ", S3 Bucket Name: " + bucketName + ", File Prefix: " + filePrefix + ", Resume Uploads: " + resumeUploads + ", Delete Original Files: " + deleteOriginalFiles
@@ -473,6 +482,7 @@ public class ModuleMinioUpload extends ModuleBase {
 			logger.error(MODULE_NAME + ".onAppStart [" + appInstance.getContextStr() + "] throwable exception: " + t.getMessage(), t);
 		}
 
+		logger.info(MODULE_NAME + ".onAppStart [" + appInstance.getContextStr() + "] will start listen to files.");
 		appInstance.addMediaWriterListener(new WriteListener());
 	}
 
@@ -536,14 +546,6 @@ public class ModuleMinioUpload extends ModuleBase {
 
 	private void startUpload(String mediaName, long delay)
 	{
-		// If filter is set.
-		if (!("".contentEquals(filterFilterSuffix) || filterFilterSuffix == null)) {
-			// If filter did not matched. Skip it.
-			if (!mediaName.endsWith(filterFilterSuffix)) {
-				logger.info(MODULE_NAME + ".startUpload (skipped) for [" + appInstance.getContextStr() + "/" + mediaName + "] due to filter suffix mismatched.", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
-				return;
-			}
-		}
 		synchronized(lock)
 		{
 			Timer t = uploadTimers.remove(mediaName);
